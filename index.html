@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>hide the kitty!!</title>
+    <style>
+         body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 650px;
+            background-color: white;
+        }
+        #polosa {
+            width: 800px;
+            height: 40px;
+            background-color: rgb(240, 240, 240);
+            position: relative;
+            border-radius: 20px;
+        }
+
+        #pointer {
+            width: 55px;
+            height: 55px;
+            background-image: url(kitty.png);
+            background-size: cover;
+            position: relative;
+            bottom: 4px;
+        }
+
+        #polosa-text-start {
+            font-family: 'Courier New', Courier, monospace;
+            font-weight: bold;
+        }
+
+        #polosa-text-end {
+            margin-left: 800px;
+            font-weight: bold;
+            font-family: 'Courier New', Courier, monospace;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <div id="polosa">
+        <div id="pointer"></div>
+        <p id="polosa-text-start">hello there...</p>
+        <p id="polosa-text-end">welcome...</p>
+    </div>
+    <script>
+        pointer.onmousedown = function (event) {
+            pointerOffsetX = event.clientX - pointer.getBoundingClientRect().left
+            polosaX = polosa.getBoundingClientRect().left
+            if (event.button !=0) return
+
+            function moveTo(event) {
+                let newLeft = event.clientX - polosaX - pointerOffsetX
+                if (newLeft < 0) {
+                    newLeft = 0
+                }
+                let polosaWidth = polosa.offsetWidth - pointer.offsetWidth
+                if (newLeft > polosaWidth) {
+                    newLeft = polosaWidth
+                }
+                pointer.style.left = newLeft + "px"
+
+                let percent = newLeft / polosaWidth
+                let shade = 255 - percent * 255
+                document.body.style.backgroundColor = `rgb(${shade}, ${shade}, ${shade})`
+            }
+            document.addEventListener("mousemove", moveTo)
+
+            document.onmouseup = function (event) {
+                document.removeEventListener("mousemove", moveTo)
+                    document.onmouseup = null
+            }
+        }
+    </script>
+</body>
+</html>
