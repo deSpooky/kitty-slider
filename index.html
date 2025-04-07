@@ -1,82 +1,137 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>hide the kitty!!</title>
-    <style>
-         body {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 650px;
-            background-color: white;
-            user-select: none;
-        }
-        #polosa {
-            width: 800px;
-            height: 40px;
-            background-color: rgb(240, 240, 240);
-            position: relative;
-            border-radius: 20px;
-        }
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>hide the kitty!!</title>
+  <style>
+    body {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      height: 100vh;
+      background-color: white;
+      user-select: none;
+      margin: 0;
+      gap: 80px;
+      padding-top: 80px;
+    }
 
-        #pointer {
-            width: 55px;
-            height: 55px;
-            background-image: url(kitty.png);
-            background-size: cover;
-            position: relative;
-            bottom: 4px;
-        }
+    #polosa1, #polosa2 {
+      position: relative;
+      width: 800px;
+      height: 40px;
+      background-color: rgb(240, 240, 240);
+      border-radius: 20px;
+    }
 
-        #polosa-text-start {
-            font-family: 'Courier New', Courier, monospace;
-            font-weight: bold;
-        }
+    #pointer1, #pointer2 {
+      width: 55px;
+      height: 55px;
+      background-image: url(kitty.png);
+      background-size: cover;
+      position: absolute;
+      bottom: -7px;
+      left: 0;
+      transition: left 0.1s ease-out;
+      z-index: 2;
+    }
 
-        #polosa-text-end {
-            margin-left: 800px;
-            font-weight: bold;
-            font-family: 'Courier New', Courier, monospace;
-            color: white;
-        }
-    </style>
+    #text1, #text2 {
+      font-family: 'Courier New', Courier, monospace;
+      font-weight: bold;
+      position: absolute;
+      top: 35px;
+    }
+
+    #text1 {
+      left: 0;
+    }
+
+    #text2 {
+      right: 0;
+      color: white;
+    }
+
+    [id^="marker1-"], [id^="marker2-"] {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 16px;
+      color: rgb(210, 210, 210);
+      z-index: 1;
+      pointer-events: none;
+    }
+  </style>
 </head>
 <body>
-    <div id="polosa">
-        <div id="pointer"></div>
-        <p id="polosa-text-start">hello there...</p>
-        <p id="polosa-text-end">welcome...</p>
-    </div>
-    <script>
-        pointer.onmousedown = function (event) {
-            pointerOffsetX = event.clientX - pointer.getBoundingClientRect().left
-            polosaX = polosa.getBoundingClientRect().left
-            if (event.button !=0) return
+  <div id="polosa1">
+    <div id="pointer1"></div>
+    <p id="text1">hello there :]</p>
+  </div>
 
-            function moveTo(event) {
-                let newLeft = event.clientX - polosaX - pointerOffsetX
-                if (newLeft < 0) {
-                    newLeft = 0
-                }
-                let polosaWidth = polosa.offsetWidth - pointer.offsetWidth
-                if (newLeft > polosaWidth) {
-                    newLeft = polosaWidth
-                }
-                pointer.style.left = newLeft + "px"
+  <div id="polosa2">
+    <div id="pointer2"></div>
+    <p id="text2">rainbow!!</p>
+  </div>
 
-                let percent = newLeft / polosaWidth
-                let shade = 255 - percent * 255
-                document.body.style.backgroundColor = `rgb(${shade}, ${shade}, ${shade})`
-            }
-            document.addEventListener("mousemove", moveTo)
+  <script>
+    function Polosa(polosa_, pointer_, steps, onSlideCallback) {
+      const polosa = document.getElementById(polosa_)
+      const pointer = document.getElementById(pointer_)
+      const stepSize = (polosa.offsetWidth - pointer.offsetWidth) / (steps - 1)
 
-            document.onmouseup = function (event) {
-                document.removeEventListener("mousemove", moveTo)
-                    document.onmouseup = null
-            }
+      for (let i = 0; i < steps; i++) {
+        const step = document.createElement("div")
+        step.id = `marker${polosa_.slice(-1)}-${i}`
+        step.innerText = "❤"
+        const left = (i * stepSize) + (pointer.offsetWidth / 2) - 8
+        step.style.left = `${left}px`
+        polosa.appendChild(step)
+      }
+
+      pointer.onmousedown = function (event) {
+        if (event.button !== 0) return
+
+        const pointerOffsetX = event.clientX - pointer.getBoundingClientRect().left
+        const polosaRect = polosa.getBoundingClientRect()
+
+        function moveTo(event) {
+          let newLeft = event.clientX - polosaRect.left - pointerOffsetX
+          const maxLeft = polosa.offsetWidth - pointer.offsetWidth
+          newLeft = Math.max(0, Math.min(newLeft, maxLeft))
+
+          const nearestStep = Math.round(newLeft / stepSize)
+          const Left = nearestStep * stepSize
+
+          pointer.style.left = Left + "px"
+
+          const percent = Left / maxLeft
+          onSlideCallback(percent)
         }
-    </script>
+
+        document.addEventListener("mousemove", moveTo)
+        document.onmouseup = function () {
+          document.removeEventListener("mousemove", moveTo)
+          document.onmouseup = null
+        }
+      }
+    }
+
+    Polosa("polosa1", "pointer1", 10, (percent) => {
+      const shade = 255 - percent * 255
+      document.body.style.backgroundColor = `rgb(${shade}, ${shade}, ${shade})`
+    })
+
+    Polosa("polosa2", "pointer2", 10, (percent) => {
+      if (percent === 0) {
+        document.body.style.backgroundColor = `hsl(0, 0%, 100%)`
+      } else {
+        const hue = percent * 360
+        const saturation = Math.min(100, percent * 130)
+        document.body.style.backgroundColor = `hsl(${hue}, ${saturation}%, 70%)`
+      }
+    })
+  </script>
 </body>
 </html>
